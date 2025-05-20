@@ -1,63 +1,65 @@
 import axios from 'axios';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import { showLoader, hideLoader, clearGallery, createGallery } from './render-functions';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
 const form = document.querySelector('.form');
 const gallery = document.querySelector('.gallery');
-
-let lightbox = new SimpleLightbox('.gallery a', { captionsData: 'alt', captionDelay: 250 });
+const loader = document.querySelector('#loader');
 
 const API_KEY = '50362686-a19d598e286bdc8c634e59341';
+const BASE_URL = 'https://pixabay.com/api/';
+const lightbox = new SimpleLightbox('.gallery a');
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const searchText = e.target.elements['search-text'].value.trim();
-  if (!searchText) {
-    iziToast.error({
-      title: 'Error',
-      message: 'Please enter a search query',
-    });
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  const searchQuery = event.currentTarget.elements['search-text'].value.trim();
+
+  if (!searchQuery) {
+    iziToast.warning({ message: 'Please enter a search term' });
     return;
   }
 
-  clearGallery();
-  showLoader();
+  gallery.innerHTML = '';
+  loader.classList.remove('hidden');
 
   try {
-    const response = await axios.get('https://pixabay.com/api/', {
+    const response = await axios.get(BASE_URL, {
       params: {
         key: API_KEY,
-        q: searchText,
+        q: searchQuery,
         image_type: 'photo',
         orientation: 'horizontal',
         safesearch: true,
-        per_page: 40,
+        per_page: 20,
       },
     });
 
     const images = response.data.hits;
+
     if (images.length === 0) {
-      iziToast.info({
-        title: 'No results',
-        message: 'No images found for your search query.',
-      });
-      hideLoader();
+      iziToast.info({ message: 'No images found. Try another word.' });
       return;
     }
 
-    createGallery(images);
+    const markup = images
+      .map(
+        img => `
+      <li>
+        <a href="${img.largeImageURL}">
+          <img src="${img.webformatURL}" alt="${img.tags}" />
+        </a>
+      </li>`
+      )
+      .join('');
+
+    gallery.innerHTML = markup;
     lightbox.refresh();
   } catch (error) {
-    iziToast.error({
-      title: 'Error',
-      message: 'Failed to fetch images. Please try again later.',
-    });
+    iziToast.error({ message: 'Something went wrong. Try again later.' });
     console.error(error);
   } finally {
-    hideLoader();
+    loader.classList.add('hidden');
   }
 });
