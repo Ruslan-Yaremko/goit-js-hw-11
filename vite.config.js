@@ -6,12 +6,18 @@ import SortCss from 'postcss-sort-media-queries';
 
 export default defineConfig(({ command }) => {
   return {
+    base: '/goit-js-hw-11/', 
+
     define: {
       [command === 'serve' ? 'global' : '_global']: {},
     },
+
     root: 'src',
+
     build: {
       sourcemap: true,
+      outDir: '../dist',
+      emptyOutDir: true,
       rollupOptions: {
         input: glob.sync('./src/*.html'),
         output: {
@@ -34,12 +40,11 @@ export default defineConfig(({ command }) => {
           },
         },
       },
-      outDir: '../dist',
-      emptyOutDir: true,
     },
+
     plugins: [
       injectHTML(),
-      FullReload(['./src/**/**.html']),
+      FullReload(['./src/**/*.html']),
       SortCss({
         sort: 'mobile-first',
       }),
