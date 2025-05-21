@@ -7,6 +7,13 @@ import 'izitoast/dist/css/iziToast.min.css';
 const form = document.querySelector('.form');
 const gallery = document.querySelector('.gallery');
 const loader = document.querySelector('#loader');
+function showLoader() {
+  loader.classList.remove('hidden');
+}
+
+function hideLoader() {
+  loader.classList.add('hidden');
+}
 
 const API_KEY = '50362686-a19d598e286bdc8c634e59341';
 const BASE_URL = 'https://pixabay.com/api/';
